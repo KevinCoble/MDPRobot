@@ -14,6 +14,8 @@ class ViewController: NSViewController {
     @IBOutlet weak var worldView: WorldView!
     @IBOutlet weak var editRadioButton: NSButton!
     @IBOutlet weak var runRadioButton: NSButton!
+    @IBOutlet weak var twoStateRadioButton: NSButton!
+    @IBOutlet weak var threeStateRadioButton: NSButton!
     @IBOutlet weak var polygonOrderTextField: NSTextField!
     @IBOutlet weak var polygonOrderStepper: NSStepper!
     @IBOutlet weak var crossTermCheckbox: NSButton!
@@ -37,6 +39,7 @@ class ViewController: NSViewController {
     @IBOutlet weak var obstacleCheckbox10: NSButton!
     @IBOutlet weak var rotateCCWButton: NSButton!
     @IBOutlet weak var rotateCWButton: NSButton!
+    @IBOutlet weak var dragInstructionsLabel: NSTextField!
     
     var runTimer : NSTimer!
     
@@ -52,11 +55,26 @@ class ViewController: NSViewController {
         }
     }
 
+    @IBAction func onRobotTypeChanged(sender: NSButton) {
+        if (sender.tag == 2) {
+            worldView.robotType == .TwoState
+        }
+        if (sender.tag == 3) {
+            worldView.robotType == .ThreeState
+        }
+        worldView.changeModel(polygonOrderTextField.integerValue, withCrossTerms: crossTermCheckbox == NSOnState)
+    }
+    
     @IBAction func onModeChanged(sender: NSButton) {
-        let newEditMode = (sender.tag == 0)
-        worldView.editMode = newEditMode
+        
+        var newMode = WorldMode.Edit
+        if (sender.tag == 1) { newMode = .Run }
+        if (sender.tag == 2) { newMode = .View }
         
         //  Enable/Disable edit buttons
+        let newEditMode = (sender.tag == 0)
+        twoStateRadioButton.enabled = newEditMode
+        threeStateRadioButton.enabled = newEditMode
         polygonOrderTextField.enabled = newEditMode
         polygonOrderStepper.enabled = newEditMode
         crossTermCheckbox.enabled = newEditMode
@@ -78,21 +96,33 @@ class ViewController: NSViewController {
         obstacleCheckbox8.enabled = newEditMode
         obstacleCheckbox9.enabled = newEditMode
         obstacleCheckbox10.enabled = newEditMode
-        rotateCCWButton.enabled = newEditMode
-        rotateCWButton.enabled = newEditMode
+        rotateCCWButton.enabled = newEditMode && (worldView.robotType == .ThreeState)
+        rotateCWButton.enabled = newEditMode && (worldView.robotType == .ThreeState)
+        dragInstructionsLabel.hidden = !newEditMode
         
-        worldView.setNeedsDisplayInRect(worldView.bounds)
+        //  If we just changed away from edit, calculate the activation function
+        if (worldView.mode == .Edit && newMode != .Edit) {
+            worldView.getActionPolicy()
+        }
         
-        //  Start or stop the run timer
-        if (newEditMode) {
+        //  If we just changed away from run, calculate the deactivate the timer
+        if (worldView.mode == .Run && newMode != .Run) {
             runTimer?.invalidate()
         }
-        else {
-            //  Get the policy
-            worldView.getActionPolicy()
-            
+        
+        //  Set the new view
+        worldView.mode = newMode
+        
+        //  Start or stop the run timer
+        switch (worldView.mode) {
+        case .Edit:
+            worldView.setNeedsDisplayInRect(worldView.bounds)
+        case .Run:
             //  Start the animation timert
             runTimer = NSTimer.scheduledTimerWithTimeInterval(0.05, target: self, selector: #selector(processRunTimer), userInfo: nil, repeats: true)
+        case .View:
+            //  Have the view update the diagram
+            worldView.setNeedsDisplayInRect(worldView.bounds)
         }
     }
     

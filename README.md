@@ -5,4 +5,4 @@ It shows the concepts well enough, but doesn't always calculate a good policy.  
 
 ## License
 
-This framework is made available with the MIT license.
+This program is made available with the MIT license.

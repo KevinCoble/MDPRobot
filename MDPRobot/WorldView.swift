@@ -18,10 +18,21 @@ enum WorldItemType {
     case Robot
 }
 
+enum RobotType {
+    case TwoState       //  State is only position, action is N, W, S, E
+    case ThreeState     //  State is position and angle, action is forward, backwards, rotate CW, rotate CCW
+}
+
+enum WorldMode {
+    case Edit
+    case Run
+    case View
+}
+
 class WorldView: NSView {
     
     //  Mode
-    var editMode = true
+    var mode = WorldMode.Edit
     
     //  Goals
     let goalRadius : CGFloat = 4.0
@@ -54,6 +65,7 @@ class WorldView: NSView {
                              CGPoint(x: 75, y: 50)]
     
     //  Robot
+    var robotType = RobotType.TwoState
     let robotRadius : CGFloat = 4.0
     var robotPosition = CGPoint(x: 0, y: 0)
     var robotAngle : CGFloat = 0.0
@@ -70,7 +82,12 @@ class WorldView: NSView {
     
     func changeModel(polygonOrder: Int, withCrossTerms: Bool)
     {
-        lrmodel = LinearRegressionModel(inputSize: 3, outputSize: 1, polygonOrder: polygonOrder, includeCrossTerms: withCrossTerms)
+        if (robotType == .TwoState) {
+            lrmodel = LinearRegressionModel(inputSize: 2, outputSize: 1, polygonOrder: polygonOrder, includeCrossTerms: withCrossTerms)
+        }
+        else {
+            lrmodel = LinearRegressionModel(inputSize: 3, outputSize: 1, polygonOrder: polygonOrder, includeCrossTerms: withCrossTerms)
+        }
     }
 
     override func drawRect(dirtyRect: NSRect) {
@@ -106,7 +123,7 @@ class WorldView: NSView {
                 let cPath: NSBezierPath = NSBezierPath(ovalInRect: circleRect)
                 goalColor.set()
                 cPath.fill()
-                if (editMode) {
+                if (mode == .Edit) {
                     let str = "\(index+1)"
                     circleRect.size.height -= 5.0
                     str.drawInRect(circleRect, withAttributes: attributes)
@@ -124,7 +141,7 @@ class WorldView: NSView {
                 let cPath: NSBezierPath = NSBezierPath(ovalInRect: circleRect)
                 pitColor.set()
                 cPath.fill()
-                if (editMode) {
+                if (mode == .Edit) {
                     let str = "\(index+1)"
                     circleRect.size.height -= 5.0
                     str.drawInRect(circleRect, withAttributes: attributes)
@@ -142,10 +159,28 @@ class WorldView: NSView {
                 let cPath: NSBezierPath = NSBezierPath(ovalInRect: circleRect)
                 obstacleColor.set()
                 cPath.fill()
-                if (editMode) {
+                if (mode == .Edit) {
                     let str = "\(index+1)"
                     circleRect.size.height -= 5.0
                     str.drawInRect(circleRect, withAttributes: attributes)
+                }
+            }
+        }
+        
+        //  Show the actions if requested
+        if (mode == .View) {
+            if (robotType == .TwoState) {
+                for x in 0...20 {
+                    for y in 0...20 {
+                        showActionsTwoState(CGPoint(x: 5 * x, y: 5 * y), xscale: xscale, yscale: yscale)
+                    }
+                }
+            }
+            else {
+                for x in 0...10 {
+                    for y in 0...10 {
+                        showActionsThreeState(CGPoint(x: 10 * x, y: 10 * y), xscale: xscale, yscale: yscale)
+                    }
                 }
             }
         }
@@ -162,19 +197,23 @@ class WorldView: NSView {
                                     2.0 * robotRadius * xscale, 2.0 * robotRadius * yscale)
         let cPath: NSBezierPath = NSBezierPath(ovalInRect: circleRect)
         cPath.fill()
-        let robotArrowColor = NSColor(red: 0.0, green: 0.0, blue: 0.8, alpha: 1.0)
-        robotArrowColor.set()
-        let arrowPath = NSBezierPath()
-        arrowPath.moveToPoint(NSMakePoint(0.0, robotRadius * yscale))
-        arrowPath.lineToPoint(NSMakePoint(-0.5 * robotRadius * xscale, 0.0))
-        arrowPath.lineToPoint(NSMakePoint(0.5 * robotRadius * xscale, 0.0))
-        arrowPath.closePath()
-        arrowPath.fill()
+        if (robotType == .ThreeState) {
+            let robotArrowColor = NSColor(red: 0.0, green: 0.0, blue: 0.8, alpha: 1.0)
+            robotArrowColor.set()
+            let arrowPath = NSBezierPath()
+            arrowPath.moveToPoint(NSMakePoint(0.0, robotRadius * yscale))
+            arrowPath.lineToPoint(NSMakePoint(-0.5 * robotRadius * xscale, 0.0))
+            arrowPath.lineToPoint(NSMakePoint(0.5 * robotRadius * xscale, 0.0))
+            arrowPath.closePath()
+            arrowPath.fill()
+        }
     }
     
     override func mouseDown(theEvent: NSEvent) {
         //  Convert the location to a world-centric version
-        let loc = convertPoint(theEvent.locationInWindow, toView: nil)
+        var loc = convertPoint(theEvent.locationInWindow, toView: nil)
+        loc.y -= 100.0;      //!!  Don't know why coordinate conversion isn't working!
+        Swift.print("loc = \(loc.x), \(loc.y) from window \(theEvent.locationInWindow.x), \(theEvent.locationInWindow.y)")
         let xloc : CGFloat = (loc.x / bounds.size.width) * (100.0 + 2.0 * robotRadius) - robotRadius
         let yloc : CGFloat = (loc.y / bounds.size.height) * (100.0 + 2.0 * robotRadius) - robotRadius
         dragItemLastLoc.x = xloc
@@ -241,7 +280,8 @@ class WorldView: NSView {
     
     override func mouseDragged(theEvent: NSEvent) {
         //  Convert the location to a world-centric version
-        let loc = convertPoint(theEvent.locationInWindow, toView: nil)
+        var loc = convertPoint(theEvent.locationInWindow, toView: nil)
+        loc.y -= 100.0;      //!!  Don't know why coordinate conversion isn't working!
         let xloc : CGFloat = (loc.x / bounds.size.width) * (100.0 + 2.0 * robotRadius) - robotRadius
         let yloc : CGFloat = (loc.y / bounds.size.height) * (100.0 + 2.0 * robotRadius) - robotRadius
         
@@ -319,31 +359,54 @@ class WorldView: NSView {
         return WorldItemType.None
     }
     
-    //  Actions are 0->Forward, 1->Backwards, 2->CCW turn, 3->CW turn
+    //  Actions for two-state are 0->North, 1->West, 2->South, 3->East
+    //  Actions for three-state are 0->Forward, 1->Backwards, 2->CCW turn, 3->CW turn
     func simulateAction(action: Int, forTime: CGFloat) ->Bool //  Return true simulation can continue
     {
         //  Perform the action
         var newPoint = robotPosition
-        switch (action) {
-        case 0:
+        if (robotType == .TwoState) {
+            switch (action) {
+            case 0:
+                robotAngle = 0.0
+            case 1:
+                robotAngle = 90.0
+            case 2:
+                robotAngle = 180.0
+            case 3:
+                robotAngle = -90.0
+            default:
+                Swift.print("Invalid action sent to simulate method")
+                return false
+            }
+            //  Add some angle variation
+            robotAngle += CGFloat(DataSet.gaussianRandom(0.0, standardDeviation: 3.0))
             let radians = robotAngle * 3.1415926 / 180
             newPoint.x -= sin(radians) * robotSpeed * forTime
             newPoint.y += cos(radians) * robotSpeed * forTime
-        case 1:
-            let radians = robotAngle * 3.1415926 / 180
-            newPoint.x += sin(radians) * robotSpeed * forTime
-            newPoint.y -= cos(radians) * robotSpeed * forTime
-        case 2:
-            robotAngle += robotTurnSpeed * forTime
-            if (robotAngle >= 180.0) { robotAngle -= 360.0 }
-            return true     //  Turns can't get us in trouble
-        case 3:
-            robotAngle -= robotTurnSpeed * forTime
-            if (robotAngle <= -180.0) { robotAngle += 360.0 }
-            return true     //  Turns can't get us in trouble
-        default:
-            Swift.print("Invalid action sent to simulate method")
-            return false
+        }
+        else {
+            switch (action) {
+            case 0:
+                let radians = robotAngle * 3.1415926 / 180
+                newPoint.x -= sin(radians) * robotSpeed * forTime
+                newPoint.y += cos(radians) * robotSpeed * forTime
+            case 1:
+                let radians = robotAngle * 3.1415926 / 180
+                newPoint.x += sin(radians) * robotSpeed * forTime
+                newPoint.y -= cos(radians) * robotSpeed * forTime
+            case 2:
+                robotAngle += robotTurnSpeed * forTime
+                if (robotAngle >= 180.0) { robotAngle -= 360.0 }
+                return true     //  Turns can't get us in trouble
+            case 3:
+                robotAngle -= robotTurnSpeed * forTime
+                if (robotAngle <= -180.0) { robotAngle += 360.0 }
+                return true     //  Turns can't get us in trouble
+            default:
+                Swift.print("Invalid action sent to simulate method")
+                return false
+            }
         }
         
         //  Bounds check
@@ -381,10 +444,14 @@ class WorldView: NSView {
             if (intersect == WorldItemType.None) { break }
         }
         
-        //  Get a random direction
-        let direction = Double(arc4random()) * 360.0 / Double(UInt32.max)
-        
-        return [Double(posX), Double(posY), direction]
+        if (robotType == .TwoState) {
+            return [Double(posX), Double(posY)]
+        }
+        else {
+            //  Get a random direction
+            let direction = Double(arc4random()) * 360.0 / Double(UInt32.max)
+            return [Double(posX), Double(posY), direction]
+        }
     }
     
     //  Return result state from simulation for action from start state.  For this model, we will simulate for 0.25 seconds in 0.5 second increments
@@ -393,12 +460,20 @@ class WorldView: NSView {
         let oldPosition = robotPosition
         let oldAngle = robotAngle
         robotPosition = CGPoint(x: startState[0], y: startState[1])
-        robotAngle = CGFloat(startState[2])
+        if (robotType == .ThreeState) {
+            robotAngle = CGFloat(startState[2])
+        }
         for _ in 0..<5 {
             simulateAction(action, forTime: 0.05)
         }
         
-        let result = [Double(robotPosition.x), Double(robotPosition.y), Double(robotAngle)]
+        var result : [Double]
+        if (robotType == .TwoState) {
+            result = [Double(robotPosition.x), Double(robotPosition.y)]
+        }
+        else {
+            result = [Double(robotPosition.x), Double(robotPosition.y), Double(robotAngle)]
+        }
         robotPosition = oldPosition
         robotAngle = oldAngle
         return result
@@ -412,7 +487,7 @@ class WorldView: NSView {
         let intersect = getRobotIntersectType(endStateLocation)
         if (intersect == WorldItemType.Goal) { return 1.0 }
         if (intersect == WorldItemType.Pit) { return -1.0 }
-        return 0.0
+        return -0.01
     }
     
     //  Routine to get the action policy (calculate V) for the current model
@@ -431,5 +506,76 @@ class WorldView: NSView {
     func getCurrentAction() -> Int{
         let currentState = [Double(robotPosition.x), Double(robotPosition.y), Double(robotAngle)]
         return markov.getAction(currentState, getResultingState: getResultStateForModel, getReward: getRewardForModel, fitModel: lrmodel)
+    }
+    
+    func showActionsTwoState(atPosition: CGPoint, xscale : CGFloat, yscale : CGFloat) {
+        let symbol = ["↑", "←", "↓", "→"]
+        
+        //  Set the label text attributes
+        let paraStyle = NSMutableParagraphStyle()
+        paraStyle.lineSpacing = 6.0
+        paraStyle.alignment = NSTextAlignment.Center
+        let attributes = [
+            NSForegroundColorAttributeName: NSColor.blackColor(),
+            NSParagraphStyleAttributeName: paraStyle,
+            //NSTextAlignment: textalign,
+            NSFontAttributeName: NSFont(name: "Helvetica Neue", size: 8)!
+        ]
+    
+        let viewingState = [Double(atPosition.x), Double(atPosition.y)]
+        let action = markov.getAction(viewingState, getResultingState: getResultStateForModel, getReward: getRewardForModel, fitModel: lrmodel)
+        
+        var point = atPosition
+        point.x += robotRadius
+        point.y += robotRadius
+        point.x *= xscale
+        point.y *= yscale
+        symbol[action].drawAtPoint(point, withAttributes: attributes)
+    }
+   
+    func showActionsThreeState(atPosition: CGPoint, xscale : CGFloat, yscale : CGFloat) {
+        let symbol = [["↑", "↓", "⟲", "⟳"],         //  Facing up
+                      ["↖︎", "↘︎", "⟲", "⟳"],       //  Facing up-left
+                      ["←", "→", "⟲", "⟳"],         //  Facing left
+                      ["↙︎", "↗︎", "⟲", "⟳"],       //  Facing down-left
+                      ["↓", "↑", "⟲", "⟳"],         //  Facing down
+                      ["↘︎", "↖︎", "⟲", "⟳"],       //  Facing down-right
+                      ["→", "←", "⟲", "⟳"],         //  Facing right
+                      ["↗︎", "↙︎", "⟲", "⟳"]]       //  Facing up-right
+        let offsetDistance: CGFloat = 8.0
+        let offset : [[CGFloat]] = [[0.0, 1.0],
+                                    [-1.0, 1.0],
+                                    [-1.0, 0.0],
+                                    [-1.0, -1.0],
+                                    [0.0, -1.0],
+                                    [1.0, -1.0],
+                                    [1.0, 0.0],
+                                    [1.0, 1.0]]
+        let angle : [Double] = [0.0, 45.0, 90.0, 135.0, 180.0, -135.0, -90.0, -45.0]
+        
+        //  Set the label text attributes
+        let paraStyle = NSMutableParagraphStyle()
+        paraStyle.lineSpacing = 6.0
+        paraStyle.alignment = NSTextAlignment.Center
+        let attributes = [
+            NSForegroundColorAttributeName: NSColor.blackColor(),
+            NSParagraphStyleAttributeName: paraStyle,
+            //NSTextAlignment: textalign,
+            NSFontAttributeName: NSFont(name: "Helvetica Neue", size: 8)!
+        ]
+        
+        for index in 0..<8 {
+            let viewingState = [Double(atPosition.x), Double(atPosition.y), angle[index]]
+            let action = markov.getAction(viewingState, getResultingState: getResultStateForModel, getReward: getRewardForModel, fitModel: lrmodel)
+            
+            var point = atPosition
+            point.x += robotRadius
+            point.y += robotRadius
+            point.x *= xscale
+            point.y *= yscale
+            point.x += offsetDistance * offset[index][0]
+            point.y += offsetDistance * offset[index][1]
+            symbol[index][action].drawAtPoint(point, withAttributes: attributes)
+        }
     }
 }

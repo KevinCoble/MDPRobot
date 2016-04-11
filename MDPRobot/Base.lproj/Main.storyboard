@@ -385,7 +385,7 @@
                     <window key="window" title="MDP Robot Test" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="IQv-IB-iLA">
                         <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
-                        <rect key="contentRect" x="196" y="240" width="800" height="600"/>
+                        <rect key="contentRect" x="196" y="140" width="800" height="680"/>
                         <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
                     </window>
                     <connections>
@@ -401,14 +401,14 @@
             <objects>
                 <viewController id="XfG-lQ-9wD" customClass="ViewController" customModule="MDPRobot" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" wantsLayer="YES" id="m2S-Jp-Qdl">
-                        <rect key="frame" x="0.0" y="0.0" width="800" height="600"/>
+                        <rect key="frame" x="0.0" y="0.0" width="800" height="680"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="XGG-hB-yWa" customClass="WorldView" customModule="MDPRobot" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                                <rect key="frame" x="0.0" y="50" width="600" height="600"/>
                             </customView>
                             <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="6HE-o3-fVv">
-                                <rect key="frame" x="624" y="566" width="57" height="18"/>
+                                <rect key="frame" x="613" y="609" width="57" height="18"/>
                                 <buttonCell key="cell" type="radio" title="Edit" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="jFd-Xt-BiI">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -418,7 +418,7 @@
                                 </connections>
                             </button>
                             <button fixedFrame="YES" tag="1" translatesAutoresizingMaskIntoConstraints="NO" id="aD8-Sf-oA3">
-                                <rect key="frame" x="700" y="566" width="57" height="18"/>
+                                <rect key="frame" x="667" y="609" width="57" height="18"/>
                                 <buttonCell key="cell" type="radio" title="Run" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="h4d-9N-IJF">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -427,8 +427,18 @@
                                     <action selector="onModeChanged:" target="XfG-lQ-9wD" id="43K-uw-4CF"/>
                                 </connections>
                             </button>
+                            <button fixedFrame="YES" tag="2" translatesAutoresizingMaskIntoConstraints="NO" id="ghQ-Or-f72">
+                                <rect key="frame" x="725" y="609" width="57" height="18"/>
+                                <buttonCell key="cell" type="radio" title="View" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="goR-4C-Abu">
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="onModeChanged:" target="XfG-lQ-9wD" id="RuG-7w-xga"/>
+                                </connections>
+                            </button>
                             <box fixedFrame="YES" title="Goals" borderType="line" translatesAutoresizingMaskIntoConstraints="NO" id="65u-6F-kSu">
-                                <rect key="frame" x="605" y="402" width="178" height="107"/>
+                                <rect key="frame" x="605" y="445" width="178" height="107"/>
                                 <view key="contentView" id="Ujb-bF-n3f">
                                     <rect key="frame" x="1" y="1" width="176" height="91"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -479,7 +489,7 @@
                                 <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                             </box>
                             <box fixedFrame="YES" title="Pits" borderType="line" translatesAutoresizingMaskIntoConstraints="NO" id="wmC-3F-dW7">
-                                <rect key="frame" x="605" y="288" width="178" height="108"/>
+                                <rect key="frame" x="605" y="331" width="178" height="108"/>
                                 <view key="contentView" id="nJf-vI-s8O">
                                     <rect key="frame" x="1" y="1" width="176" height="92"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -530,7 +540,7 @@
                                 <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                             </box>
                             <box fixedFrame="YES" title="Obstacles" borderType="line" translatesAutoresizingMaskIntoConstraints="NO" id="hAQ-Ug-vPY">
-                                <rect key="frame" x="605" y="64" width="178" height="216"/>
+                                <rect key="frame" x="605" y="107" width="178" height="216"/>
                                 <view key="contentView" id="Yn2-Fl-QWQ">
                                     <rect key="frame" x="1" y="1" width="176" height="200"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -641,14 +651,14 @@
                                 <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                             </box>
                             <box fixedFrame="YES" title="Robot direction" borderType="line" translatesAutoresizingMaskIntoConstraints="NO" id="dD9-kA-7cw">
-                                <rect key="frame" x="605" y="1" width="177" height="55"/>
+                                <rect key="frame" x="605" y="44" width="177" height="55"/>
                                 <view key="contentView" id="GLw-ZC-TT2">
                                     <rect key="frame" x="1" y="1" width="175" height="39"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="TBE-El-igH">
                                             <rect key="frame" x="95" y="2" width="81" height="32"/>
-                                            <buttonCell key="cell" type="push" title="CW" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Fhj-uC-ei9">
+                                            <buttonCell key="cell" type="push" title="CW" bezelStyle="rounded" alignment="center" enabled="NO" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Fhj-uC-ei9">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>
@@ -658,7 +668,7 @@
                                         </button>
                                         <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Hwa-j8-9Kt">
                                             <rect key="frame" x="6" y="2" width="81" height="32"/>
-                                            <buttonCell key="cell" type="push" title="CCW" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="lSM-Kr-wG3">
+                                            <buttonCell key="cell" type="push" title="CCW" bezelStyle="rounded" alignment="center" enabled="NO" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="lSM-Kr-wG3">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>
@@ -672,7 +682,7 @@
                                 <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                             </box>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Ndh-SG-StF">
-                                <rect key="frame" x="611" y="542" width="95" height="17"/>
+                                <rect key="frame" x="611" y="585" width="95" height="17"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Polygon Order:" id="WlL-bQ-i64">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -680,7 +690,7 @@
                                 </textFieldCell>
                             </textField>
                             <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Gb1-Mj-fHw">
-                                <rect key="frame" x="611" y="518" width="146" height="18"/>
+                                <rect key="frame" x="611" y="561" width="146" height="18"/>
                                 <buttonCell key="cell" type="check" title="Include Cross Terms" bezelStyle="regularSquare" imagePosition="left" inset="2" id="ZIj-4W-snW">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -690,7 +700,7 @@
                                 </connections>
                             </button>
                             <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="3Oa-B1-8q6">
-                                <rect key="frame" x="704" y="539" width="44" height="22"/>
+                                <rect key="frame" x="704" y="582" width="44" height="22"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" title="1" drawsBackground="YES" id="4Gq-AI-oHb">
                                     <numberFormatter key="formatter" formatterBehavior="default10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" maximumFractionDigits="3" id="8p8-jT-dTw">
                                         <real key="minimum" value="1"/>
@@ -705,16 +715,45 @@
                                 </connections>
                             </textField>
                             <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Yw6-fu-cJp">
-                                <rect key="frame" x="747" y="536" width="19" height="27"/>
+                                <rect key="frame" x="747" y="579" width="19" height="27"/>
                                 <stepperCell key="cell" continuous="YES" alignment="left" minValue="1" maxValue="5" doubleValue="1" id="Gqd-8E-FMT"/>
                                 <connections>
                                     <action selector="onPolygonOrderStepperChanged:" target="XfG-lQ-9wD" id="4nJ-bH-27b"/>
                                 </connections>
                             </stepper>
+                            <button fixedFrame="YES" tag="2" translatesAutoresizingMaskIntoConstraints="NO" id="gnT-mf-U22">
+                                <rect key="frame" x="19" y="657" width="255" height="18"/>
+                                <buttonCell key="cell" type="radio" title="Two State (X, Y), 4 actions - N, W, S, E" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="9FO-OF-6cB">
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="onRobotTypeChanged:" target="XfG-lQ-9wD" id="QNp-n5-jnN"/>
+                                </connections>
+                            </button>
+                            <button fixedFrame="YES" tag="3" translatesAutoresizingMaskIntoConstraints="NO" id="BbH-bt-gqO">
+                                <rect key="frame" x="317" y="657" width="353" height="18"/>
+                                <buttonCell key="cell" type="radio" title="Three State (X, Y, Θ), 4 actions - Fore, Back, CW, CCW" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="Tr4-PF-CLd">
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="onRobotTypeChanged:" target="XfG-lQ-9wD" id="MwA-cf-9xp"/>
+                                </connections>
+                            </button>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kwJ-PY-cCF">
+                                <rect key="frame" x="166" y="20" width="268" height="17"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Drag items in world view to change position" id="V0X-rZ-iif">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
                         </subviews>
                     </view>
                     <connections>
                         <outlet property="crossTermCheckbox" destination="Gb1-Mj-fHw" id="7cz-3D-7Xx"/>
+                        <outlet property="dragInstructionsLabel" destination="kwJ-PY-cCF" id="nNf-vN-tQa"/>
                         <outlet property="editRadioButton" destination="6HE-o3-fVv" id="TTr-UB-l9G"/>
                         <outlet property="goalCheckbox1" destination="TWB-Cs-LpY" id="Z3t-5O-Hc0"/>
                         <outlet property="goalCheckbox2" destination="XX5-PU-FVQ" id="Wda-pr-Qra"/>
@@ -739,6 +778,8 @@
                         <outlet property="rotateCCWButton" destination="Hwa-j8-9Kt" id="SR0-ut-MFb"/>
                         <outlet property="rotateCWButton" destination="TBE-El-igH" id="ZCe-AH-gA6"/>
                         <outlet property="runRadioButton" destination="aD8-Sf-oA3" id="i8j-lt-P7i"/>
+                        <outlet property="threeStateRadioButton" destination="BbH-bt-gqO" id="HzJ-e1-7tR"/>
+                        <outlet property="twoStateRadioButton" destination="gnT-mf-U22" id="x3u-uZ-BgF"/>
                         <outlet property="worldView" destination="XGG-hB-yWa" id="uTL-M6-utM"/>
                     </connections>
                 </viewController>
