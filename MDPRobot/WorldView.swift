@@ -78,7 +78,7 @@ class WorldView: NSView {
     
     //  MDP and fit model
     let markov = MDP(states: 0, actions: 4, discount: 0.98) //  Leave continuous state parameters at default
-    var lrmodel = LinearRegressionModel(inputSize: 3, outputSize: 1, polygonOrder: 1)
+    var lrmodel = LinearRegressionModel(inputSize: 2, outputSize: 1, polygonOrder: 1)
     
     func changeModel(polygonOrder: Int, withCrossTerms: Bool)
     {
@@ -100,6 +100,10 @@ class WorldView: NSView {
         //  draw the background
         NSColor.whiteColor().setFill()
         NSRectFill(bounds)
+        
+        if (mode == .View && robotType == .TwoState) {
+            showExpectedReward(10, xscale : xscale, yscale : yscale)
+        }
         
         //  Set the label text attributes
         let paraStyle = NSMutableParagraphStyle()
@@ -506,6 +510,52 @@ class WorldView: NSView {
     func getCurrentAction() -> Int{
         let currentState = [Double(robotPosition.x), Double(robotPosition.y), Double(robotAngle)]
         return markov.getAction(currentState, getResultingState: getResultStateForModel, getReward: getRewardForModel, fitModel: lrmodel)
+    }
+    
+    func showExpectedReward(granularity: Int, xscale : CGFloat, yscale : CGFloat) {
+        //  Get the reward value at each grid location
+        let posScale = 100.0 / Double(granularity)
+        let posOffset = posScale * 0.5
+        var reward = [Double](count: granularity * granularity, repeatedValue: 0.0)
+        for x in 0..<granularity {
+            let xpos = posOffset + (posScale * Double(x))
+            for y in 0..<granularity {
+                let ypos = posOffset + (posScale * Double(y))
+                do {
+                    reward[x*granularity+y] = try lrmodel.predictOne([xpos, ypos])[0]
+                }
+                catch {
+                    return  //  Just leave on an error
+                }
+            }
+        }
+        
+        //  Get the minimum and maximum values
+        let minValue = reward.minElement()
+        let maxValue = reward.maxElement()
+        if let minValue = minValue, maxValue = maxValue {
+            let rectSize = 100.0 / CGFloat(granularity)
+            let rectOffset = rectSize * 0.5
+            //  Draw each value
+            for x in 0..<granularity {
+                for y in 0..<granularity {
+                    let rewardRect = NSMakeRect((CGFloat(x) * rectSize + robotRadius - rectOffset) * xscale,
+                                                (CGFloat(y) * rectSize + robotRadius - rectOffset) * yscale,
+                                                rectSize * xscale, rectSize * yscale)
+                    var rectColor : NSColor
+                    if (reward[x*granularity+y] >= 0) {
+                        let scale  = CGFloat(reward[x*granularity+y] / maxValue)
+                        rectColor = NSColor(red: 0.2 * scale, green: 1.0 * scale, blue: 0.2 * scale, alpha: 1.0)
+                    }
+                    else {
+                        let scale  = CGFloat(reward[x*granularity+y] / minValue)
+                        rectColor = NSColor(red: 0.2 * scale, green: 0.2 * scale, blue: 1.0 * scale, alpha: 1.0)
+                    }
+                    rectColor.setFill()
+                    NSRectFill(rewardRect)
+                }
+            }
+        }
     }
     
     func showActionsTwoState(atPosition: CGPoint, xscale : CGFloat, yscale : CGFloat) {
