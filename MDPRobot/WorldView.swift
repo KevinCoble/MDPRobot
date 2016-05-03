@@ -72,6 +72,10 @@ class WorldView: NSView {
     let robotSpeed : CGFloat = 25.0           //  4 seconds to cross
     let robotTurnSpeed : CGFloat = 180.0      //  2 seconds to turn around
     
+    //  Flags
+    var lastActionCausedStall = false       //  Flag indicating the last action resulted in no movement
+    
+    //  Edit state
     var dragItemType = WorldItemType.None
     var dragItemIndex = 0
     var dragItemLastLoc = CGPointZero
@@ -102,7 +106,7 @@ class WorldView: NSView {
         NSRectFill(bounds)
         
         if (mode == .View && robotType == .TwoState) {
-            showExpectedReward(10, xscale : xscale, yscale : yscale)
+            showExpectedReward(20, xscale : xscale, yscale : yscale)
         }
         
         //  Set the label text attributes
@@ -217,7 +221,6 @@ class WorldView: NSView {
         //  Convert the location to a world-centric version
         var loc = convertPoint(theEvent.locationInWindow, toView: nil)
         loc.y -= 100.0;      //!!  Don't know why coordinate conversion isn't working!
-        Swift.print("loc = \(loc.x), \(loc.y) from window \(theEvent.locationInWindow.x), \(theEvent.locationInWindow.y)")
         let xloc : CGFloat = (loc.x / bounds.size.width) * (100.0 + 2.0 * robotRadius) - robotRadius
         let yloc : CGFloat = (loc.y / bounds.size.height) * (100.0 + 2.0 * robotRadius) - robotRadius
         dragItemLastLoc.x = xloc
@@ -367,6 +370,8 @@ class WorldView: NSView {
     //  Actions for three-state are 0->Forward, 1->Backwards, 2->CCW turn, 3->CW turn
     func simulateAction(action: Int, forTime: CGFloat) ->Bool //  Return true simulation can continue
     {
+        lastActionCausedStall = false
+        
         //  Perform the action
         var newPoint = robotPosition
         if (robotType == .TwoState) {
@@ -415,12 +420,14 @@ class WorldView: NSView {
         
         //  Bounds check
         if (newPoint.x < 0 || newPoint.x > 100 || newPoint.y < 0 || newPoint.y > 100) {
+            lastActionCausedStall = true
             return true     //  Don't commit the move, but continue
         }
         
         //  See if the new location is valid
         let intersect = getRobotIntersectType(newPoint)
         if (intersect == WorldItemType.Obstacle) {
+            lastActionCausedStall = true
             return true     //  Don't commit the move, but continue
         }
         
@@ -512,6 +519,12 @@ class WorldView: NSView {
         return markov.getAction(currentState, getResultingState: getResultStateForModel, getReward: getRewardForModel, fitModel: lrmodel)
     }
     
+    //  Routine to get the ordered action list for the current state
+    func getCurrentActionOrder() -> [Int] {
+        let currentState = [Double(robotPosition.x), Double(robotPosition.y), Double(robotAngle)]
+        return markov.getActionOrder(currentState, getResultingState: getResultStateForModel, getReward: getRewardForModel, fitModel: lrmodel)
+    }
+    
     func showExpectedReward(granularity: Int, xscale : CGFloat, yscale : CGFloat) {
         //  Get the reward value at each grid location
         let posScale = 100.0 / Double(granularity)
@@ -535,21 +548,20 @@ class WorldView: NSView {
         let maxValue = reward.maxElement()
         if let minValue = minValue, maxValue = maxValue {
             let rectSize = 100.0 / CGFloat(granularity)
-            let rectOffset = rectSize * 0.5
             //  Draw each value
             for x in 0..<granularity {
                 for y in 0..<granularity {
-                    let rewardRect = NSMakeRect((CGFloat(x) * rectSize + robotRadius - rectOffset) * xscale,
-                                                (CGFloat(y) * rectSize + robotRadius - rectOffset) * yscale,
+                    let rewardRect = NSMakeRect((CGFloat(x) * rectSize + robotRadius) * xscale,
+                                                (CGFloat(y) * rectSize + robotRadius) * yscale,
                                                 rectSize * xscale, rectSize * yscale)
                     var rectColor : NSColor
                     if (reward[x*granularity+y] >= 0) {
                         let scale  = CGFloat(reward[x*granularity+y] / maxValue)
-                        rectColor = NSColor(red: 0.2 * scale, green: 1.0 * scale, blue: 0.2 * scale, alpha: 1.0)
+                        rectColor = NSColor(red: 0.3, green: 0.3 + 0.7 * scale, blue: 0.3, alpha: 1.0)
                     }
                     else {
                         let scale  = CGFloat(reward[x*granularity+y] / minValue)
-                        rectColor = NSColor(red: 0.2 * scale, green: 0.2 * scale, blue: 1.0 * scale, alpha: 1.0)
+                        rectColor = NSColor(red: 0.3 + 0.7 * scale, green: 0.3, blue: 0.3, alpha: 1.0)
                     }
                     rectColor.setFill()
                     NSRectFill(rewardRect)

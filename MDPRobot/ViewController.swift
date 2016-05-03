@@ -16,6 +16,7 @@ class ViewController: NSViewController {
     @IBOutlet weak var runRadioButton: NSButton!
     @IBOutlet weak var twoStateRadioButton: NSButton!
     @IBOutlet weak var threeStateRadioButton: NSButton!
+    @IBOutlet weak var doNextActionCheckbox: NSButton!
     @IBOutlet weak var polygonOrderTextField: NSTextField!
     @IBOutlet weak var polygonOrderStepper: NSStepper!
     @IBOutlet weak var crossTermCheckbox: NSButton!
@@ -175,6 +176,21 @@ class ViewController: NSViewController {
             editRadioButton.state = NSOnState
             onModeChanged(editRadioButton)
         }
+        
+        //  If the last move caused a stall, try the next best action
+        if (worldView.lastActionCausedStall && doNextActionCheckbox.state == NSOnState) {
+            let actions = worldView.getCurrentActionOrder()
+            var nextAction = 1
+            while (worldView.lastActionCausedStall && nextAction < actions.count) {
+                if (!worldView.simulateAction(actions[nextAction], forTime: 0.05)) {
+                    //  We hit an end position, stop the run mode
+                    editRadioButton.state = NSOnState
+                    onModeChanged(editRadioButton)
+                }
+                nextAction += 1
+            }
+        }
+        
         worldView.setNeedsDisplayInRect(worldView.bounds)
     }
 
